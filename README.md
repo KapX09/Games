@@ -71,3 +71,7 @@ This is a simple snake game built using Python's `turtle` graphics module. The s
 
 ---
 Here I intended to add AI implementation in future.
+
+
+## 3. Maze:
+
