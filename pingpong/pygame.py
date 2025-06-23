@@ -22,6 +22,46 @@ BALL_SIZE = 20
 MAX_SPEED = 12
 SPEED_INCREASE_FACTOR = 1.03
 
+# Font
+font = pygame.font.SysFont("Courier", 32)
+
+clock = pygame.time.Clock()
+
+def draw_instructions_screen():
+    WIN.fill(BLACK)
+    # Instruction box background
+    instruction_rect = pygame.Rect(100, HEIGHT//2 - 100, 600, 200)
+    pygame.draw.rect(WIN, DARK_GRAY, instruction_rect)
+    pygame.draw.rect(WIN, WHITE, instruction_rect, 2)
+
+    instructions = [
+        "*****Single Player Pong******",
+        "",
+        "Controls:",
+        "1. Up / Down arrows - Move paddle",
+        "2. P - Pause / Unpause",
+        "3. R - Restart after Game Over",
+        "",
+        "Press *ENTER* to start"
+    ]
+
+    for i, line in enumerate(instructions):
+        text = font.render(line, True, WHITE)
+        WIN.blit(text, (instruction_rect.x + 20, instruction_rect.y + 20 + i * 35))
+
+    pygame.display.flip()
+
+def reset_game():
+    global paddle, ball, ball_dx, ball_dy, score, hit_count, game_over, paused
+    paddle = pygame.Rect(50, HEIGHT // 2 - PADDLE_HEIGHT // 2, PADDLE_WIDTH, PADDLE_HEIGHT)
+    ball = pygame.Rect(WIDTH // 2, HEIGHT // 2, BALL_SIZE, BALL_SIZE)
+    ball_dx = 5
+    ball_dy = 5
+    score = 0
+    hit_count = 0
+    game_over = False
+    paused = False
+
 # Initialize game variables
 paused = False
 game_over = False
@@ -37,6 +77,92 @@ ball = pygame.Rect(WIDTH // 2, HEIGHT // 2, BALL_SIZE, BALL_SIZE)
 # Start screen flag
 start_screen = True
 
+# Main loop
+running = True
+while running:
+    clock.tick(60)
+
+    if start_screen:
+        draw_instructions_screen()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    start_screen = False
+                    reset_game()
+        continue
+
+    # Game screen logic
+    WIN.fill(BLACK)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.KEYDOWN:
+            # Pause/unpause
+            if event.key == pygame.K_p and not game_over:
+                paused = not paused
+            # Restart game
+            if event.key == pygame.K_r and game_over:
+                reset_game()
+
+    keys = pygame.key.get_pressed()
+    if not paused and not game_over:
+        # Paddle movement
+        if keys[pygame.K_UP] and paddle.top > 0:
+            paddle.y -= PADDLE_SPEED
+        if keys[pygame.K_DOWN] and paddle.bottom < HEIGHT:
+            paddle.y += PADDLE_SPEED
+
+        # Ball movement
+        ball.x += ball_dx
+        ball.y += ball_dy
+
+        # Bounce off top/bottom
+        if ball.top <= 0 or ball.bottom >= HEIGHT:
+            ball_dy *= -1
+
+        # Bounce off right wall
+        if ball.right >= WIDTH:
+            ball.right = WIDTH
+            ball_dx *= -1
+            score += 1
+
+        # Paddle collision
+        if ball.colliderect(paddle):
+            ball.left = paddle.right
+            ball_dx *= -1
+            hit_count += 1
+
+            if hit_count % 5 == 0 and abs(ball_dx) < MAX_SPEED:
+                ball_dx *= SPEED_INCREASE_FACTOR
+                ball_dy *= SPEED_INCREASE_FACTOR
+
+        # Game over if missed
+        if ball.left <= 0:
+            game_over = True
+
+    # Draw paddle and ball
+    pygame.draw.rect(WIN, WHITE, paddle)
+    pygame.draw.ellipse(WIN, WHITE, ball)
+
+    # Draw score
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    WIN.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, 20))
+
+    # Pause message
+    if paused:
+        pause_text = font.render("PAUSED", True, WHITE)
+        WIN.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2 - 20))
+
+    # Game over message
+    if game_over:
+        game_over_text = font.render("Game Over! Press R to Restart", True, WHITE)
+        WIN.blit(game_over_text, (WIDTH // 2 - game_over_text.get_width() // 2, HEIGHT // 2))
+
+    pygame.display.flip()
 
 pygame.quit()
 sys.exit()
