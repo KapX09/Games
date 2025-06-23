@@ -29,27 +29,36 @@ clock = pygame.time.Clock()
 
 def draw_instructions_screen():
     WIN.fill(BLACK)
-    # Instruction box background
-    instruction_rect = pygame.Rect(100, HEIGHT//2 - 100, 600, 200)
-    pygame.draw.rect(WIN, DARK_GRAY, instruction_rect)
-    pygame.draw.rect(WIN, WHITE, instruction_rect, 2)
+    small_font = pygame.font.SysFont("Courier", 20)
 
-    instructions = [
-        "*****Single Player Pong******",
-        "",
-        "Controls:",
-        "1. Up / Down arrows - Move paddle",
-        "2. P - Pause / Unpause",
-        "3. R - Restart after Game Over",
-        "",
-        "Press *ENTER* to start"
-    ]
+    # Full box lines that cover instructions inside
+    box_lines = [
+        "+*****************************",
+        "+                            +",
+        "+    Single-Player Pong      +",
+        "+    -------------------     +",
+        "+                            +",
+        "+                            +",
+        "+    Controls:               +",
+        "+     Up / Down arrows       +",
+        "+     P - Pause / Unpause    +",
+        "+     R - Restart            +",
+        "+                            +",
+        "+    Press ENTER to start    +",
+        "+                            +",
+        "+                            +",
+        "******************************"   
+        ]
 
-    for i, line in enumerate(instructions):
-        text = font.render(line, True, WHITE)
-        WIN.blit(text, (instruction_rect.x + 20, instruction_rect.y + 20 + i * 35))
+    start_x = WIDTH // 2 - 150
+    start_y = HEIGHT // 2 - 100
+    line_height = small_font.get_height()
 
+    for i, line in enumerate(box_lines):
+        text = small_font.render(line, True, WHITE)
+        WIN.blit(text, (start_x, start_y + i * line_height))
     pygame.display.flip()
+
 
 def reset_game():
     global paddle, ball, ball_dx, ball_dy, score, hit_count, game_over, paused
@@ -166,3 +175,4 @@ while running:
 
 pygame.quit()
 sys.exit()
+
